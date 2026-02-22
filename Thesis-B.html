@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>My experiment</title>
+    <script src="https://unpkg.com/jspsych@8.2.2"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-html-keyboard-response@2.1.0"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-survey-text"></script>
+    <script src="https://unpkg.com/@jspsych-contrib/plugin-spr"></script>
+    <link href="https://unpkg.com/jspsych@8.2.2/css/jspsych.css" rel="stylesheet" type="text/css" />
+    <script src="Stimulus_B.js"></script>
+  </head>
+  <body></body>
+  <script>
+    let participantID;
+
+    const jsPsych = initJsPsych({
+      on_finish: ()=>{
+        jsPsych.data.get().localSave('csv', `data-${participantID}.csv`)
+      }
+    });
+
+    participantID = jsPsych.randomization.randomID(8);
+
+    jsPsych.data.addProperties({
+      participantID: participantID,
+      stimulusSet: 'B'
+    })
+
+    const ready = {
+      type: jsPsychHtmlKeyboardResponse,
+      stimulus: '<p>Press the spacebar to begin the story.</p>',
+      choices: [' '],
+    }
+
+    const hello_trial = {
+      type: jsPsychSpr,
+      sentence: jsPsych.timelineVariable('text'),
+      delimiter: "^",
+      mode: 3,
+      show_first_blank: false,
+      data: {
+        id: jsPsych.timelineVariable('id'),
+        story_type: jsPsych.timelineVariable('type')
+      }
+    }
+
+    const title_entry = {
+      type: jsPsychSurveyText,
+      questions: [
+        {prompt: 'Suggest a title for the story you just read'}
+      ],
+      data: {
+        id: jsPsych.timelineVariable('id'),
+        story_type: jsPsych.timelineVariable('type')
+      }
+    }
+
+    const test = {
+      timeline_variables: condition_b,
+      timeline: [ready, hello_trial, title_entry]
+    }
+
+    jsPsych.run([test]);
+  </script>
+</html>
